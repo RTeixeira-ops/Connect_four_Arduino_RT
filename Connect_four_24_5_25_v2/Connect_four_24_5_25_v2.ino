@@ -273,7 +273,7 @@ void Init_motor()
     //o motor atingiu o alvo se for necessario um atraso introduz-se aqui
   }
   stop_motor();
-  displayMessage("Em posicao, aguardar por input"); //versao para uso do lcd
+  //displayMessage("Em posicao, aguardar por input"); //versao para uso do lcd
 }
 
 // Funçao que espera pela entrada do jogador
@@ -326,7 +326,7 @@ void verificar_resultado() {
 void turno_jogador() {
     if (gameEnded== false) {
     
-  
+  displayMessage("Em posicao, aguardar por input"); //versao para uso do lcd
   int playerCol = esperar_por_entrada(); // obter coluna valida para drop_disc
   int resultPlayer = drop_disc(&game, 1, playerCol);
   if (resultPlayer == -1) {
@@ -364,8 +364,8 @@ void turno_bot()
   // 3: Escolher aleatoriamente uma das colunas livres
   int botColumn = availableCols[random(0, totalAvailable)];
 
-  displayMessage("Bot escolheu a coluna: ");
-  displayMessage(String(botColumn));
+  String message = String("Bot escolheu a coluna: " + String(botColumn+1));
+  displayMessage(message);
 
 	// 4: realizar a jogada
   move_to_column(botColumn);			// 	mover para a coluna
@@ -390,16 +390,22 @@ void move_to_column(int targetCol) {
     Serial.println("Coluna invalida para mover.");
     return;
   }
-  displayMessage("Movendo para coluna ");
-  displayMessage(String(targetCol));
-  move_right(); // move para direita assumindo sempre que começa no FimCursoEsq
 
   int matchCount = 0; // variavel de controlo para estabilidade
   const int requiredMatches = 3; // alvo para determinar que atingiu o ponto desejado de forma definitiva
+  bool printMessage = true;
 
   while (true) {
     int analogValue = analogRead(analogPin);
     int expected = analogButtons[targetCol].expectedADC;
+
+    if (printMessage) {
+      String message = String("Movendo para coluna: " + String(targetCol+1));
+      displayMessage(message);
+      printMessage = false;
+    }
+
+    move_right(); // move para direita assumindo sempre que começa no FimCursoEsq
 
     if (abs(analogValue - expected) <= thresholdMargin) {
       matchCount++;
@@ -414,11 +420,11 @@ void move_to_column(int targetCol) {
       break;
     }
 
-    // salvaguarda se atingir o fim de curso da direita
     if (digitalRead(FimCursoDir) == LOW) {
       Serial.println("Fim do carril atingido! Abortando movimento.");
-			move_left();
-      return; //funçao termina, a sequencia e interrompida?
+      //Caso atingir o fim de curso, retorna para posição inicial
+      voltar_para_inicio();
+      printMessage = true;
     }
 
     delay(20); // delay para estabilidade
