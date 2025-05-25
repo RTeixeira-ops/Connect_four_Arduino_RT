@@ -41,6 +41,9 @@ void displayMessage(const String& message, bool clearFirst = true) {
     lcd.print(message.substring(16, 32));
   }
 }
+
+
+
 //initializacao, o objetivo : zerar todas a celulas
 void init_board(Connect4* game) {
 	for (int i = 0; i < TOTAL_CELLS; ++i) {
@@ -48,6 +51,8 @@ void init_board(Connect4* game) {
 		game->board[i].state = 0;
 	}
 }
+
+
 //colocar uma peca
 int drop_disc(Connect4* game, int player, int col) {
 	if (col < 0 || col >= COLS) return -1; // se a coluna for um valor valido
@@ -60,6 +65,7 @@ int drop_disc(Connect4* game, int player, int col) {
 	}
 	return -1; // Coluna cheia
 }
+
 //retornar o estado de uma celula, util se for necessario a outras funcionalidade  lererm o estdo da matriz ie: um bot
 int get_cell_state(Connect4* game, int pos) {
 	if (pos < 0 || pos >= TOTAL_CELLS) return -1;
@@ -82,6 +88,7 @@ int get_available_columns(Connect4* game, int* output) {
   }
   return count; // retorna o nr de colunas abertas
 }
+
 //funçao: retorna uma representaçao visual da matriz na porta serial
 void print_board_state(Connect4* game) {
   Serial.println("Estado atual do tabuleiro:");
@@ -97,6 +104,7 @@ void print_board_state(Connect4* game) {
   }
   Serial.println();
 }
+
 //verificar se alguem ganhou
 bool check_winner(Connect4* game, int player) {
 	int directions[4][2] = {{0,1},{1,0},{1,1},{1,-1}};
@@ -140,8 +148,12 @@ bool check_winner(Connect4* game, int player) {
 
 return false; // ninguem ganhou..por agora
 }
-// Verificacao de possibilidade ganhar TBD
-// 	Esta funcao e opcional objectivo aqui e determinar se ainda existem estados onde e possivle ganhar, sem ter de esperar que mais pecas sejam jogadas
+
+// Verificacao de possibilidade ganhar
+/* 	Esta funcao e opcional
+	objectivo aqui e determinar se ainda existem estados onde e possivle ganhar, sem ter de esperar que mais pecas sejam jogadas
+
+*/
 bool has_possible_win_line(Connect4* game, int player) {
 	int directions[4][2] = {{0,1},{1,0},{1,1},{1,-1}};  //Deltas
 
@@ -180,6 +192,7 @@ bool has_possible_win_line(Connect4* game, int player) {
 	}
 	return false; //nao existem estados possiveis de ganhar
 }
+
 //detecao de empates usa a funcao acima para ler estados possiveis
 bool is_draw(Connect4* game) {
 	// A matriz esta cheia?
@@ -209,8 +222,8 @@ const int controlPin2 = 7;
 const int enablePin = 6;
 const int resetPin = 8;
 
-const int FimCursoEsq = 4;  
-const int FimCursoDir = 2;  
+const int FimCursoEsq = 4;   // 
+const int FimCursoDir = 2;   // 
 
 
 // Definiçoes de escada
@@ -231,6 +244,7 @@ ButtonThreshold analogButtons[] = {
 
 const int thresholdMargin = 20;
 
+
 // funçoes de controlo do motor DC
 void move_left() {
   digitalWrite(controlPin1, LOW);  
@@ -243,10 +257,10 @@ void move_right() {
   digitalWrite(controlPin2, LOW);
   digitalWrite(enablePin, HIGH);
 }
-
 void stop_motor() {
   digitalWrite(enablePin, LOW);
 }
+
 /*Esta funçao e chamada ao inicio para assegurar a posiçao do motor */
 void Init_motor()
 {
@@ -261,6 +275,7 @@ void Init_motor()
   stop_motor();
   //displayMessage("Em posicao, aguardar por input"); //versao para uso do lcd
 }
+
 // Funçao que espera pela entrada do jogador
 int esperar_por_entrada() {
   int analogValue;
@@ -285,6 +300,7 @@ int esperar_por_entrada() {
     delay(50); // debounce
   }
 }
+
 // funçao: prcura saber se algum dos jogadores venceu apos cada jogador
 void verificar_resultado() {
   if (check_winner(&game, 1)) {
@@ -310,13 +326,17 @@ void verificar_resultado() {
 void turno_jogador() {
     if (gameEnded== false) {
     
+  check_reset();
   displayMessage("Em posicao, aguardar por input"); //versao para uso do lcd
   int playerCol = esperar_por_entrada(); // obter coluna valida para drop_disc
+  check_reset();
   int resultPlayer = drop_disc(&game, 1, playerCol);
+  check_reset();
   if (resultPlayer == -1) {
     displayMessage("Erro ao jogar. coluna cheia.");
     return;
   }
+  check_reset();
   print_board_state(&game);
   verificar_resultado();
   check_reset();
@@ -324,9 +344,10 @@ void turno_jogador() {
   delay(1000);
   }
 }
-//logica intenra do turno do bot
-void turno_bot(){
 
+//logica intenra do turno do bot
+void turno_bot()
+{
     if (gameEnded== false) {
     
   
@@ -336,8 +357,9 @@ void turno_bot(){
     displayMessage("Empate detectado! Zero jogadas possiveis.");
     return; // parar loop
   }
-
+  check_reset();
   // 2: Obter colunas disponiveis
+  check_reset();
   int availableCols[COLS];
   int totalAvailable = get_available_columns(&game, availableCols);
 
@@ -345,6 +367,7 @@ void turno_bot(){
     displayMessage("Tabuleiro cheio! Empate.");
     return;
   }
+  check_reset();
   // 3: Escolher aleatoriamente uma das colunas livres
   int botColumn = availableCols[random(0, totalAvailable)];
 
@@ -352,10 +375,11 @@ void turno_bot(){
   displayMessage(message);
 
 	// 4: realizar a jogada
+  check_reset();
   move_to_column(botColumn);			// 	mover para a coluna
 	soltar_peca();                 // 	soltar a peça com o servo
   voltar_para_inicio();         // 		retornar à posição inicial
-
+  check_reset();
   // 5: Jogar 
   int dropResult = drop_disc(&game, 2, botColumn);
   if (dropResult == -1) {
@@ -369,6 +393,7 @@ void turno_bot(){
   verificar_resultado();
   check_reset();
 }
+
 //funçao: mover o motor Dc ate a coluna alvo
 void move_to_column(int targetCol) {
   if (targetCol < 0 || targetCol >= COLS) {
@@ -442,12 +467,12 @@ void setupResetInterrupt() {
   PCMSK0 |= (1 << PCINT0);      // Pcint D8
   sei();                        // ativar interrupts
 }
-
 ISR(PCINT0_vect) { //D8
   if (digitalRead(resetPin) == LOW) {
     resetRequested = true;
   }
 }
+
 //Funçao: reiniciar
 void reset_jogo() {
   displayMessage("Reset solicitado. Reiniciar jogo...");
@@ -458,8 +483,8 @@ void reset_jogo() {
   gameEnded = false;
 }
 
-void check_reset(){
-
+void check_reset()
+{
     if (resetRequested) { //tentativa de interrupt simples
     resetRequested = false; 
     reset_jogo();
@@ -494,8 +519,8 @@ void setup() {
 	init_board(&game); //inicializar matriz
 }
 
-void loop() {
-
+void loop() 
+{
 	/*sequencia
 		- Esperar por entrada
 		- Ler estado da mesa
@@ -517,7 +542,8 @@ void loop() {
   if (gameEnded) {
     return; // Se o jogo terminou, aguardar reset
   }
-  check_reset();// Lógica do jogo continua apenas se o jogo não acabou
+  check_reset();
+	// Lógica do jogo continua apenas se o jogo não acabou
   turno_jogador();// o jogador começa sempre primeiro e e referencia do como P1
 	turno_bot(); //logica interna do turno do bot explicada  na sequencia acima(P2)
 	verificar_resultado();  // verificaçao de segurança para o estado do jogo

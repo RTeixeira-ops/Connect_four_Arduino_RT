@@ -326,7 +326,7 @@ void verificar_resultado() {
 }
 //logica intenra do turno do jogador
 void turno_jogador() {
-    if (gameEnded== false) {
+    if (gameEnded== false ||resetRequested == false) {
     
   check_reset();
   displayMessage("Em posicao, aguardar por input"); //versao para uso do lcd
@@ -350,8 +350,7 @@ void turno_jogador() {
 //logica intenra do turno do bot
 void turno_bot()
 {
-    check_reset();
-    if (gameEnded== false) {
+    if (gameEnded== false ||resetRequested == false){
     
 	//  1: Verifica se ainda existem possibilidades de vitoria
   if (!has_possible_win_line(&game, 1) && !has_possible_win_line(&game, 2)) {
@@ -483,14 +482,15 @@ void reset_jogo() {
   print_board_state(&game); // opcional
   gameEnded = false;
   delay(20);
-  turno_jogador();// o jogador começa sempre primeiro e e referencia do como P1
+  //turno_jogador();// o jogador começa sempre primeiro 
 }
 
 void check_reset()
 {
     if (resetRequested) { //tentativa de interrupt simples
-    resetRequested = false; 
     reset_jogo();
+    resetRequested = false; 
+    return;
   }
 }
 
@@ -546,7 +546,9 @@ void loop()
   check_reset();
 	// Lógica do jogo continua apenas se o jogo não acabou
   turno_jogador();// o jogador começa sempre primeiro e e referencia do como P1
+  check_reset();
 	turno_bot(); //logica interna do turno do bot explicada  na sequencia acima(P2)
+  check_reset(); // verificaçao secundaria para seguranca _ opcional
 	verificar_resultado();  // verificaçao de segurança para o estado do jogo
   check_reset(); // verificaçao secundaria para seguranca _ opcional
 
