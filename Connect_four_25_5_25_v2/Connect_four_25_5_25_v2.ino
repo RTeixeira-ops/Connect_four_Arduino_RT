@@ -279,6 +279,7 @@ void Init_motor()
 // Funçao que espera pela entrada do jogador
 int esperar_por_entrada() {
   int analogValue;
+  check_reset();
   while (true) {
     analogValue = analogRead(analogPin);
     for (int i = 0; i < sizeof(analogButtons) / sizeof(ButtonThreshold); i++) {
@@ -299,6 +300,7 @@ int esperar_por_entrada() {
     }
     delay(50); // debounce
   }
+  check_reset();
 }
 
 // funçao: prcura saber se algum dos jogadores venceu apos cada jogador
@@ -351,10 +353,8 @@ void turno_bot()
     check_reset();
     if (gameEnded== false) {
     
-  
 	//  1: Verifica se ainda existem possibilidades de vitoria
   if (!has_possible_win_line(&game, 1) && !has_possible_win_line(&game, 2)) {
-    //Serial.println("Empate detectado! Nao ha jogadas vitoriosas possiveis.");
     displayMessage("Empate detectado! Zero jogadas possiveis.");
     return; // parar loop
   }
