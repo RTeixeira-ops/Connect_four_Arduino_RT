@@ -348,10 +348,7 @@ void turno_jogador() {
     }
     print_board_state(&game);
     verificar_resultado();
-    if (resetRequested) {
-      return;
-    }
-    if (gameEnded) return;
+    if (resetRequested || gameEnded) return;
     delay(1000);
   }
 }
@@ -558,12 +555,14 @@ void loop() {
 	*/
   // Verificar se reset foi pressionado
   if (gameEnded) {
+    reset_jogo();
+    gameEnded = false;
     return;  // Se o jogo terminou, aguardar reset
   }
   // Lógica do jogo continua apenas se o jogo não acabou
   turno_jogador();  // o jogador começa sempre primeiro e e referencia do como P1
-  turno_bot();      //logica interna do turno do bot explicada  na sequencia acima(P2); // verificaçao secundaria para seguranca _ opcional
+  turno_bot();      //logica interna do turno do bot explicada  na sequencia acima(P2); 
   check_reset();
   verificar_resultado();  // verificaçao de segurança para o estado do jogo
-  ;                       // verificaçao secundaria para seguranca _ opcional
+                        
 }
