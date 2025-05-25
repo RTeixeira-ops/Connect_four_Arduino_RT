@@ -348,6 +348,7 @@ void turno_jogador() {
 //logica intenra do turno do bot
 void turno_bot()
 {
+    check_reset();
     if (gameEnded== false) {
     
   
