@@ -11,16 +11,16 @@
 #define MotorInterfaceType 4
 
 //aproximaçoes para stepping do motor
-#define COL1 95
-#define COL2 116
-#define COL3 137
-#define COL4 158
-#define COL5 179
-#define COL6 200
-#define COL7 221
+#define COL1 1000
+#define COL2 2000
+#define COL3 3000
+#define COL4 4000
+#define COL5 5000
+#define COL6 6000
+#define COL7 7000
 
 
-bool gameEnded = false;    // flag para detecao de vitoria, serva para evitar que o microcontrolador empanque na verificaçao
+bool gameEnded = false;                // flag para detecao de vitoria, serva para evitar que o microcontrolador empanque na verificaçao
 volatile bool resetRequested = false;  //sinal para reset
 
 typedef struct {
@@ -34,9 +34,9 @@ typedef struct {
 
 Connect4 game;
 //hardware, servomotor, LCD e stepper
-const int stepsPerRevolution = 64; //
+const int stepsPerRevolution = 64;  //
 Servo myServo;
-AccelStepper AssembStepper(MotorInterfaceType, 9,10,11,12);
+AccelStepper AssembStepper(MotorInterfaceType, 9, 10, 11, 12);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 
@@ -233,7 +233,7 @@ const int analogPin = A0;
 const int analogPinLCD_1 = A4;
 const int analogPinLCD_2 = A5;
 
-const int resetPin = 8; //
+const int resetPin = 8;     //
 const int FimCursoEsq = 4;  //
 
 
@@ -259,14 +259,15 @@ const int thresholdMargin = 20;
 
 /*Esta funçao e chamada ao inicio para assegurar a posiçao do motor */
 void Init_motor() {
-   int stepCount = 0;
   //initializaçao do motor
   displayMessage("A mover...");  //versao para uso do lcd
+  AssembStepper.setMaxSpeed(500);
+  AssembStepper.setAcceleration(200);
+  AssembStepper.moveTo(-10000);
   while (digitalRead(FimCursoEsq) == HIGH) {
     AssembStepper.run();
-    stepCount--;
   }
-  //displayMessage("Em posicao, aguardar por input"); //versao para uso do lcd
+  AssembStepper.setCurrentPosition(0);
 }
 
 // Funçao que espera pela entrada do jogador
@@ -398,43 +399,63 @@ void move_to_column(int targetCol) {
   const int requiredMatches = 1;  // alvo para determinar que atingiu o ponto desejado de forma definitiva
   bool printMessage = true;
 
-
+  while (true) {
     if (printMessage) {
       String message = String("Movendo para coluna: " + String(targetCol + 1));
       displayMessage(message);
       printMessage = false;
     }
-   if(targetCol == 0)
-   {
-    AssembStepper.moveTo(COL1);
-   }  
-   if(targetCol == 1)
-   {
-    AssembStepper.moveTo(COL2);
-   }
-   if(targetCol == 2)
-   {
-    AssembStepper.moveTo(COL3);
-   }
-   if(targetCol == 3)
-   {
-    AssembStepper.moveTo(COL4);
-   }
-   if(targetCol == 4)
-   {
-    AssembStepper.moveTo(COL5);
-   }
-   if(targetCol == 5)
-   {
-    AssembStepper.moveTo(COL6);
-   }
-   if(targetCol == 6)
-   {
-    AssembStepper.moveTo(COL7);
-   }
+    if (targetCol == 0) {
+      AssembStepper.moveTo(COL1);
+      while (AssembStepper.distanceToGo() != 0) {
+        AssembStepper.run();
+      }
+      return;
+    }
+    if (targetCol == 1) {
+      AssembStepper.moveTo(COL2);
+      while (AssembStepper.distanceToGo() != 0) {
+        AssembStepper.run();
+      }
+      return;
+    }
+    if (targetCol == 2) {
+      AssembStepper.moveTo(COL3);
+      while (AssembStepper.distanceToGo() != 0) {
+        AssembStepper.run();
+      }
+      return;
+    }
+    if (targetCol == 3) {
+      AssembStepper.moveTo(COL4);
+      while (AssembStepper.distanceToGo() != 0) {
+        AssembStepper.run();
+      }
+      return;
+    }
+    if (targetCol == 4) {
+      AssembStepper.moveTo(COL5);
+      while (AssembStepper.distanceToGo() != 0) {
+        AssembStepper.run();
+      }
+      return;
+    }
+    if (targetCol == 5) {
+      AssembStepper.moveTo(COL6);
+      while (AssembStepper.distanceToGo() != 0) {
+        AssembStepper.run();
+      }
+      return;
+    }
+    if (targetCol == 6) {
+      AssembStepper.moveTo(COL7);
+      while (AssembStepper.distanceToGo() != 0) {
+        AssembStepper.run();
+      }
+      return;
+    }
     delay(20);  // delay para estabilidade
-  
-  
+  }
 }
 //Funçao: mover o servo para posicionar e largar a peça
 void soltar_peca() {
@@ -446,12 +467,15 @@ void soltar_peca() {
 }
 //retornar a posiçao inicial apos largar a peça
 void voltar_para_inicio() {
-  int stepCount = 0;
   displayMessage("A voltar para a posicao inicial...");
-    while (digitalRead(FimCursoEsq) == HIGH) {
+  AssembStepper.setMaxSpeed(500);
+  AssembStepper.setAcceleration(200);
+  AssembStepper.moveTo(-10000);
+
+  while (digitalRead(FimCursoEsq) == HIGH) {
     AssembStepper.run();
-    stepCount--;
   }
+  AssembStepper.setCurrentPosition(0);
   displayMessage("Posicao inicial atingida.");
 }
 // PCINT setup for D8 (PORTB0)
@@ -498,10 +522,10 @@ void setup() {
   myServo.attach(3);
   myServo.write(180);  // pos inicial em baixo
   //stepper
-  AssembStepper.setMaxSpeed(1000.0);
-  AssembStepper.setAcceleration(50.0);
-  AssembStepper.setSpeed(200);
-  AssembStepper.moveTo(2048);
+  AssembStepper.setMaxSpeed(400.0);
+  AssembStepper.setAcceleration(200.0);
+  AssembStepper.setSpeed(100);
+  AssembStepper.moveTo(20480);
 
   voltar_para_inicio();
   //porta serial para debug
@@ -540,8 +564,7 @@ void loop() {
   }
   // Lógica do jogo continua apenas se o jogo não acabou
   turno_jogador();  // o jogador começa sempre primeiro e e referencia do como P1
-  turno_bot();      //logica interna do turno do bot explicada  na sequencia acima(P2); 
+  turno_bot();      //logica interna do turno do bot explicada  na sequencia acima(P2);
   check_reset();
   verificar_resultado();  // verificaçao de segurança para o estado do jogo
-                        
 }

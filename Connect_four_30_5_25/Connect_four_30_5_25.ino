@@ -398,7 +398,8 @@ void move_to_column(int targetCol) {
   const int requiredMatches = 1;  // alvo para determinar que atingiu o ponto desejado de forma definitiva
   bool printMessage = true;
 
-
+  while(true)
+  {
     if (printMessage) {
       String message = String("Movendo para coluna: " + String(targetCol + 1));
       displayMessage(message);
@@ -433,7 +434,7 @@ void move_to_column(int targetCol) {
     AssembStepper.moveTo(COL7);
    }
     delay(20);  // delay para estabilidade
-  
+  }
   
 }
 //Funçao: mover o servo para posicionar e largar a peça
